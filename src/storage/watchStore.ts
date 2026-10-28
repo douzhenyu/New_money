@@ -1,7 +1,7 @@
-/** 盯盘页的持久化：自选列表 + 涨跌配色 */
+/** 大盘页的持久化：自选列表 + 涨跌配色 */
 
-import type { KeyValueStore } from '../storage'
-import { quoteBySymbol } from '../watch/quotes'
+import type { KeyValueStore } from './types'
+import { quoteBySymbol } from '../watch/market'
 import { DEFAULT_COLOR_SCHEME, isColorScheme } from '../watch/settings'
 import type { ColorScheme } from '../watch/settings'
 import { readJson, writeJson } from './safeStore'

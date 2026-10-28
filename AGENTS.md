@@ -1,14 +1,14 @@
 # New money — 开发约定
 
-个人理财工具。当前做 L1，三个页面：
+个人理财工具。当前做 L1，两个页面：
 
 | 路由 | 页面 | 内容 |
 | --- | --- | --- |
-| `/` | 记账 | 资产概览 + 记一笔 + 本月流水 |
-| `/watch` | 盯盘 | 自选列表 + 涨跌配色（**静态假数据，不联网**） |
-| `/plan` | 测算 | 四个输入 + 三个财富灯塔 |
+| `/` | 资产 | 总资产 + 配置结构（按类别横条）+ 资产明细（可增删改） |
+| `/watch` | 大盘 | 指数卡片 + 自选列表 + 涨跌配色（**静态假数据，不联网**） |
 
-术语与口径见 `CONTEXT.md`，产品范围见 issue OPHE-29。
+`/plan` 测算页没有界面，`src/kernel/` 的内核与单测保留，不许删。
+术语与口径见 `CONTEXT.md`。
 
 ## 技术栈
 
@@ -42,18 +42,20 @@ npm run preview    # 预览 dist/
 - **格式化只走 `kernel/format.ts`**：金额自动切「万 / 亿」，不允许出现 `1e+9`。
 - **数字排版**：等宽数字（`font-variant-numeric: tabular-nums`），重算时不许抖动。
 - **布局**：375 与 1440 都必须无横向滚动；新增元素先自查这两档。
-- **聚合口径只写在 `src/ledger/summary.ts`**：资产总额、今日变动、当日小计都是纯函数，
-  组件只负责展示。日期一律用本地日历日（`src/ledger/dates.ts`），不要用 `toISOString()`。
-- **分类文案只写在 `src/ledger/categories.ts`**：组件里不许出现「餐饮」「其他」这类字面量。
-- **盯盘不接真实行情**：价格与走势只从 `src/watch/quotes.json` 读；新增数据源不改组件。
+- **资产口径只写在 `src/assets/summary.ts` 与 `src/assets/holdings.ts`**：总资产、浮动、
+  配置结构占比、市值都是纯函数，组件只负责展示。
+- **类别文案只写在 `src/assets/categories.ts`**：组件里不许出现「现金」「股票」这类字面量；
+  哪些类别可以带份额与现价也由它决定（`allowsUnits`）。
+- **大盘不接真实行情**：指数与自选只从 `src/watch/market.json` 读；新增数据源不改组件。
 - **涨跌配色只翻转语义 token**（`--color-up` / `--color-down`），不要在组件里写死红绿。
-- **localStorage key 带版本后缀**（如 `new-money.ledger.entries.v1`），读时逐条校验，
+- **localStorage key 带版本后缀**（如 `new-money.assets.items.v1`），读时逐条校验，
   坏数据丢掉而不是整页崩掉。
 - **新增依赖**：先问，不要为了小功能引入框架或组件库。
 
 ## 测试约定
 
-- 公式、边界、文案口径的变化必须同时有测试：`src/kernel/*.test.ts`、`src/ledger/*.test.ts`。
+- 公式、边界、文案口径的变化必须同时有测试：`src/kernel/*.test.ts`、`src/assets/*.test.ts`、
+  `src/watch/*.test.ts`。
 - 失败路径与边界优先于 happy path（未填、0、负数、超范围、60 年以上）。
 - 测试用父 issue 的测试向量对答案，不要自己另造一套数字。
 

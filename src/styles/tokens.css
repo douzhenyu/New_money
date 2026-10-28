@@ -25,6 +25,8 @@
   /* 涨跌色：语义 token，红涨绿跌 / 绿涨红跌 只翻转这两个值 */
   --color-up: #c0392b;
   --color-down: #1d7a4b;
+  /* 平盘胶囊用中性实底，不借涨也不借跌 */
+  --color-flat: #6b6b65;
 
   /* 字号阶梯 */
   --font-family-base: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',

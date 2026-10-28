@@ -1,14 +1,14 @@
 /**
- * 极简路由：三条路径，History API，无依赖、无状态管理。
+ * 极简路由：两条路径，History API，无依赖、无状态管理。
  *
- * 之所以不引 react-router：只有三个静态页面，没有嵌套路由、没有 loader、没有搜索参数，
+ * 之所以不引 react-router：只有两个静态页面，没有嵌套路由、没有 loader、没有搜索参数，
  * 一个 pathname → 页面的纯函数就够了（可单测）。
  *
  * 注意：path 路由在静态托管下需要 SPA 回退（任意路径都回 index.html），
  * 见 README「部署」一节。
  */
 
-export const ROUTES = ['/', '/watch', '/plan'] as const
+export const ROUTES = ['/', '/watch'] as const
 
 export type Route = (typeof ROUTES)[number]
 
@@ -27,9 +27,8 @@ export function matchRoute(pathname: string): Route {
 
 /** 页面标题，随路由切换 */
 export const ROUTE_TITLES: Record<Route, string> = {
-  '/': '记账 · New money',
-  '/watch': '盯盘 · New money',
-  '/plan': '测算 · New money',
+  '/': '资产 · New money',
+  '/watch': '大盘 · New money',
 }
 
 export function navigate(path: Route): void {

@@ -1,6 +1,6 @@
 /** localStorage 访问层：统一处理「读不到 / 读坏了 / 写不进去」 */
 
-import type { KeyValueStore } from '../storage'
+import type { KeyValueStore } from './types'
 
 /**
  * 浏览器 localStorage；隐私模式或被禁用时退化成内存存储，

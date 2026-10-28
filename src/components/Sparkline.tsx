@@ -1,4 +1,4 @@
-import { sparklinePoints } from '../watch/quotes'
+import { sparklinePoints } from '../watch/market'
 
 export interface SparklineProps {
   trend: readonly number[]

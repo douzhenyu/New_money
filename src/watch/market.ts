@@ -1,31 +1,54 @@
 /**
- * 自选标的的行情 —— **L1 全部是静态假数据**。
+ * 大盘页的自选与指数 —— **L1 全部是静态假数据**。
  *
- * 价格、涨跌幅、迷你走势都来自 `quotes.json`，不接任何行情接口、不发网络请求。
- * 换成真实行情时只需要在这里加一个数据源，页面与图表代码不动。
+ * 数据只在 `market.json`，不接行情接口、不发网络请求。
+ * 换真实数据源时只改这一层，页面与图表代码不动。
  */
 
-import raw from './quotes.json'
+import raw from './market.json'
 
 export interface Quote {
   symbol: string
+  /** 名称（主） */
   name: string
-  /** 最新价 */
+  /** 全称（次要灰字） */
+  fullName: string
   price: number
+  /** 涨跌额 */
+  changeAmount: number
   /** 涨跌幅（%），正涨负跌 */
   changePct: number
   /** 迷你走势的历史点，从旧到新 */
   trend: number[]
 }
 
-/** 示例标的池（静态假数据） */
-export const QUOTES: readonly Quote[] = raw
+export interface MarketIndex {
+  symbol: string
+  name: string
+  /** 点位 */
+  value: number
+  changePct: number
+  trend: number[]
+}
+
+interface MarketData {
+  indices: MarketIndex[]
+  quotes: Quote[]
+}
+
+const data = raw as MarketData
+
+export const INDICES: readonly MarketIndex[] = data.indices
+export const QUOTES: readonly Quote[] = data.quotes
 
 export function quoteBySymbol(symbol: string): Quote | undefined {
   return QUOTES.find((quote) => quote.symbol === symbol)
 }
 
-/** 按 symbol 顺序取，缺的自动跳过（存储里有脏数据也不会崩） */
+/** 空状态里给的热门标的建议（挑前三个，模拟「建议」而不是随机） */
+export const SUGGESTED_SYMBOLS: readonly string[] = QUOTES.slice(0, 3).map((quote) => quote.symbol)
+
+/** 按自选顺序取，未知与重复自动跳过 */
 export function quotesForSymbols(symbols: readonly string[]): Quote[] {
   const picked: Quote[] = []
   const seen = new Set<string>()
@@ -41,13 +64,13 @@ export function quotesForSymbols(symbols: readonly string[]): Quote[] {
 
 export type Direction = 'up' | 'down' | 'flat'
 
-export function directionOf(changePct: number): Direction {
-  if (changePct > 0) return 'up'
-  if (changePct < 0) return 'down'
+export function directionOf(change: number): Direction {
+  if (change > 0) return 'up'
+  if (change < 0) return 'down'
   return 'flat'
 }
 
-/** 涨跌幅文案：带符号，两位小数，0 不带符号 */
+/** 涨跌幅：'+1.24%' / '-0.88%' / '0.00%' */
 export function formatChangePct(changePct: number): string {
   if (!Number.isFinite(changePct)) return '—'
   if (changePct === 0) return '0.00%'
@@ -55,13 +78,30 @@ export function formatChangePct(changePct: number): string {
   return `${sign}${Math.abs(changePct).toFixed(2)}%`
 }
 
-/** 价格文案：最多 3 位小数，去尾零（ETF 净值常见 3 位） */
+/** 涨跌额：'+20.60' / '-0.10' / '0.00' */
+export function formatChangeAmount(changeAmount: number): string {
+  if (!Number.isFinite(changeAmount)) return '—'
+  if (changeAmount === 0) return '0.00'
+  const sign = changeAmount > 0 ? '+' : '-'
+  return `${sign}${Math.abs(changeAmount).toFixed(2)}`
+}
+
+/** 价格：至少两位小数，最多三位（ETF 净值常见 3 位），千分位 */
 export function formatPrice(price: number): string {
   if (!Number.isFinite(price)) return '—'
   return new Intl.NumberFormat('zh-CN', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 3,
   }).format(price)
+}
+
+/** 指数点位：固定两位小数 */
+export function formatIndexValue(value: number): string {
+  if (!Number.isFinite(value)) return '—'
+  return new Intl.NumberFormat('zh-CN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
 }
 
 /**
@@ -74,7 +114,6 @@ export function sparklinePoints(
   height: number,
   padding = 1,
 ): string {
-  if (trend.length < 2) return ''
   const valid = trend.filter((value) => Number.isFinite(value))
   if (valid.length < 2) return ''
 

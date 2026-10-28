@@ -2,9 +2,8 @@ import { navigate } from '../router/router'
 import type { Route } from '../router/router'
 
 const ITEMS: ReadonlyArray<{ route: Route; label: string }> = [
-  { route: '/', label: '记账' },
-  { route: '/watch', label: '盯盘' },
-  { route: '/plan', label: '测算' },
+  { route: '/', label: '资产' },
+  { route: '/watch', label: '大盘' },
 ]
 
 export function AppNav({ route }: { route: Route }) {

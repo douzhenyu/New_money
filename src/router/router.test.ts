@@ -2,15 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { DEFAULT_ROUTE, matchRoute, ROUTES, ROUTE_TITLES } from './router'
 
 describe('路由匹配', () => {
-  it('三条路径各自命中', () => {
+  it('两条路径各自命中', () => {
     expect(matchRoute('/')).toBe('/')
     expect(matchRoute('/watch')).toBe('/watch')
-    expect(matchRoute('/plan')).toBe('/plan')
   })
 
   it('末尾斜杠不影响结果', () => {
     expect(matchRoute('/watch/')).toBe('/watch')
-    expect(matchRoute('/plan//')).toBe('/plan')
+    expect(matchRoute('/watch//')).toBe('/watch')
     expect(matchRoute('')).toBe('/')
   })
 
@@ -18,6 +17,7 @@ describe('路由匹配', () => {
     expect(matchRoute('/nope')).toBe(DEFAULT_ROUTE)
     expect(matchRoute('/watch/detail')).toBe(DEFAULT_ROUTE)
     expect(matchRoute('/WATCH')).toBe(DEFAULT_ROUTE)
+    expect(matchRoute('/plan')).toBe(DEFAULT_ROUTE)
   })
 
   it('每个路由都有标题', () => {

@@ -1,26 +1,50 @@
 import { describe, expect, it } from 'vitest'
 import {
   directionOf,
+  formatChangeAmount,
   formatChangePct,
+  formatIndexValue,
   formatPrice,
-  QUOTES,
+  INDICES,
   quoteBySymbol,
+  QUOTES,
   quotesForSymbols,
   sparklinePoints,
-} from './quotes'
+  SUGGESTED_SYMBOLS,
+} from './market'
 import { COLOR_SCHEMES, DEFAULT_COLOR_SCHEME, isColorScheme } from './settings'
 
 describe('静态假数据（不接行情接口）', () => {
-  it('标的是唯一的一批，字段齐全', () => {
+  it('指数是三张卡片，字段齐全', () => {
+    expect(INDICES).toHaveLength(3)
+    for (const index of INDICES) {
+      expect(index.name.length).toBeGreaterThan(0)
+      expect(Number.isFinite(index.value)).toBe(true)
+      expect(Number.isFinite(index.changePct)).toBe(true)
+      expect(index.trend.length).toBeGreaterThanOrEqual(2)
+    }
+  })
+
+  it('自选池字段齐全且 symbol 唯一', () => {
     expect(QUOTES.length).toBeGreaterThanOrEqual(5)
     const symbols = QUOTES.map((quote) => quote.symbol)
     expect(new Set(symbols).size).toBe(symbols.length)
     for (const quote of QUOTES) {
       expect(quote.name.length).toBeGreaterThan(0)
+      expect(quote.fullName.length).toBeGreaterThan(0)
       expect(Number.isFinite(quote.price)).toBe(true)
-      expect(Number.isFinite(quote.changePct)).toBe(true)
+      expect(Number.isFinite(quote.changeAmount)).toBe(true)
       expect(quote.trend.length).toBeGreaterThanOrEqual(2)
       expect(quote.trend.every((point) => Number.isFinite(point))).toBe(true)
+    }
+  })
+
+  it('价格、涨跌额、涨跌幅三者自洽', () => {
+    for (const quote of QUOTES) {
+      const previousClose = quote.price - quote.changeAmount
+      if (previousClose === 0) continue
+      expect((quote.changeAmount / previousClose) * 100).toBeCloseTo(quote.changePct, 1)
+      expect(directionOf(quote.changeAmount)).toBe(directionOf(quote.changePct))
     }
   })
 
@@ -31,37 +55,46 @@ describe('静态假数据（不接行情接口）', () => {
     expect(directions.has('flat')).toBe(true)
   })
 
-  it('按 symbol 取标的，未知返回 undefined', () => {
-    expect(quoteBySymbol(QUOTES[0]!.symbol)?.name).toBe(QUOTES[0]!.name)
-    expect(quoteBySymbol('NOPE')).toBeUndefined()
+  it('空状态建议取前三个真实存在的标的', () => {
+    expect(SUGGESTED_SYMBOLS).toHaveLength(3)
+    for (const symbol of SUGGESTED_SYMBOLS) {
+      expect(quoteBySymbol(symbol)).toBeDefined()
+    }
   })
 
-  it('按自选顺序取，跳过未知与重复', () => {
+  it('按自选顺序取，未知与重复自动跳过', () => {
     const first = QUOTES[1]!.symbol
     const second = QUOTES[0]!.symbol
-    const picked = quotesForSymbols([second, 'NOPE', first, second])
-    expect(picked.map((quote) => quote.symbol)).toEqual([second, first])
+    expect(quotesForSymbols([second, 'NOPE', first, second]).map((quote) => quote.symbol)).toEqual([
+      second,
+      first,
+    ])
   })
 })
 
-describe('涨跌展示', () => {
-  it('涨跌平三种方向', () => {
-    expect(directionOf(1.2)).toBe('up')
-    expect(directionOf(-1.2)).toBe('down')
-    expect(directionOf(0)).toBe('flat')
-  })
-
-  it('涨跌幅带符号、两位小数', () => {
+describe('数字展示', () => {
+  it('涨跌幅带符号两位小数', () => {
     expect(formatChangePct(1.24)).toBe('+1.24%')
     expect(formatChangePct(-0.88)).toBe('-0.88%')
     expect(formatChangePct(0)).toBe('0.00%')
     expect(formatChangePct(Number.NaN)).toBe('—')
   })
 
-  it('价格至少两位小数，最多三位', () => {
-    expect(formatPrice(1685.5)).toBe('1,685.50')
-    expect(formatPrice(3.982)).toBe('3.982')
+  it('涨跌额带符号两位小数', () => {
+    expect(formatChangeAmount(20.646)).toBe('+20.65')
+    expect(formatChangeAmount(-0.099)).toBe('-0.10')
+    expect(formatChangeAmount(0)).toBe('0.00')
+  })
+
+  it('价格千分位、两到三位小数', () => {
+    expect(formatPrice(1685.646)).toBe('1,685.646')
+    expect(formatPrice(11.181)).toBe('11.181')
     expect(formatPrice(Number.NaN)).toBe('—')
+  })
+
+  it('指数点位固定两位小数', () => {
+    expect(formatIndexValue(3245.68)).toBe('3,245.68')
+    expect(formatIndexValue(10236.5)).toBe('10,236.50')
   })
 })
 
@@ -84,12 +117,11 @@ describe('迷你走势坐标', () => {
     }
   })
 
-  it('最高点在上、最低点在下（y 轴翻转）', () => {
-    const points = sparklinePoints([10, 20], 60, 20, 1)
-    const pairs = points.split(' ').map((pair) => pair.split(',').map(Number))
-    const firstY = pairs[0]?.[1] ?? Number.NaN
-    const secondY = pairs[1]?.[1] ?? Number.NaN
-    expect(firstY).toBeGreaterThan(secondY)
+  it('最高点在上（y 轴翻转）', () => {
+    const pairs = sparklinePoints([10, 20], 60, 20, 1)
+      .split(' ')
+      .map((pair) => pair.split(',').map(Number))
+    expect(pairs[0]?.[1] ?? Number.NaN).toBeGreaterThan(pairs[1]?.[1] ?? Number.NaN)
   })
 
   it('全平价画中线，不出 NaN', () => {
@@ -102,7 +134,7 @@ describe('迷你走势坐标', () => {
 describe('涨跌配色配置', () => {
   it('默认红涨绿跌（A 股习惯）', () => {
     expect(DEFAULT_COLOR_SCHEME).toBe('red-up')
-    expect(COLOR_SCHEMES).toContain('red-up')
+    expect(COLOR_SCHEMES).toEqual(['red-up', 'green-up'])
   })
 
   it('只接受两种合法值', () => {
