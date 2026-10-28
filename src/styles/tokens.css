@@ -1,8 +1,8 @@
 /**
  * L1 设计 token。
  *
- * ⚠️ 中性占位值：Iris 的 L1 设计稿（OPHE-30）还没到。这里先把变量名和层级定下来，
- * 设计稿到位后只替换变量值，组件与计算内核不动。
+ * ⚠️ 中性占位值：Iris 的 L1 设计稿（OPHE-30）三个方向还没被成员选定，
+ * 定稿后只替换这里的变量值，组件结构与计算内核不动。
  *
  * 命名按用途而不是外观：--color-text-muted 而不是 --color-gray-500。
  */
@@ -19,7 +19,12 @@
   --color-accent: #2f6157;
   --color-accent-soft: #e4ede9;
   --color-warning: #8a4b1f;
+  --color-warning-soft: #fbf3ec;
   --color-achieved: #2f6157;
+
+  /* 涨跌色：语义 token，红涨绿跌 / 绿涨红跌 只翻转这两个值 */
+  --color-up: #c0392b;
+  --color-down: #1d7a4b;
 
   /* 字号阶梯 */
   --font-family-base: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
@@ -63,4 +68,16 @@
   --content-max-width: 1180px;
   --form-panel-width: 340px;
   --breakpoint-two-column: 900px;
+}
+
+/* 涨跌配色：默认红涨绿跌（A 股习惯），盯盘页可切到绿涨红跌 */
+:root,
+[data-color-scheme='red-up'] {
+  --color-up: #c0392b;
+  --color-down: #1d7a4b;
+}
+
+[data-color-scheme='green-up'] {
+  --color-up: #1d7a4b;
+  --color-down: #c0392b;
 }
