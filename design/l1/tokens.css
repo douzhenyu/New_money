@@ -1,0 +1,21 @@
+/* 沿用原 A 的基底；仅补总资产层级、行情胶囊与本轮反馈参数。 */
+:root{
+ color-scheme:light dark;
+ --font-body:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+ --font-number:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+ --text-xs:12px;--text-sm:13px;--text-base:14px;--text-lg:16px;--text-title:22px;--text-amount:24px;--text-total:44px;
+ --leading:1.5;
+ --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:48px;
+ --radius-input:6px;--radius-panel:10px;--radius-track:3px;--radius-quote:6px;
+ --shadow-panel:none;
+ --duration-feedback:120ms;--duration-progress:180ms;--duration-surface:200ms;--ease-feedback:cubic-bezier(.2,0,0,1);
+ --bg:#F3F6F5;--surface:#FFFFFF;--ink:#142C28;--muted:#50655F;--accent:#087262;--accent-soft:#E6F2EE;--line:#B9C8C3;--track:#DCE6E2;
+ --error:#A62C29;--error-bg:#FFF0ED;--focus:#005FC4;
+ --quote-up:#B42C37;--quote-down:#087262;--quote-up-fill:#B42C37;--quote-down-fill:#087262;--quote-flat-fill:#50655F;--quote-on-fill:#FFFFFF;
+}
+[data-palette="us"]{--quote-up:#087262;--quote-down:#B42C37;--quote-up-fill:#087262;--quote-down-fill:#B42C37}
+@media(prefers-color-scheme:dark){
+ :root{--bg:#14201D;--surface:#1B2C27;--ink:#F0F7F4;--muted:#B4C7BE;--accent:#78D4B7;--accent-soft:#243D34;--line:#637F72;--track:#3A5147;--error:#FFB3A8;--error-bg:#472B2A;--focus:#9BC9FF;--quote-up:#FFB1B7;--quote-down:#78D4B7}
+ [data-palette="us"]{--quote-up:#78D4B7;--quote-down:#FFB1B7}
+}
+@media(prefers-reduced-motion:reduce){:root{--duration-feedback:0ms;--duration-progress:0ms;--duration-surface:0ms}}
